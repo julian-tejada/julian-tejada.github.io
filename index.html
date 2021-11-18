@@ -181,7 +181,7 @@ pre code {
 Dados &lt;- read_csv(&#39;Dados_v1.csv&#39;)</code></pre>
 <p>Para converter várias colunas em uma diade VI-VD usamos o comando gather onde <span style="color: red;">key</span> é o nome da VI, e <span style="color: red;">value</span> é o nome da VD.</p>
 <pre class="r"><code>library(tidyverse)
- df &lt;- df %&gt;% gather(key = &quot;Meses&quot;, value = &quot;Atraso&quot;, Janeiro, Fevereiro, Marco, Abril, Maio, Junho )</code></pre>
+ Dados &lt;- Dados %&gt;% gather(key = &quot;Meses&quot;, value = &quot;Atraso&quot;, Janeiro, Fevereiro, Marco, Abril, Maio, Junho )</code></pre>
 </div>
 <div id="estatística-descriptica-no-r" class="section level1">
 <h1>Estatística descriptica no R</h1>
