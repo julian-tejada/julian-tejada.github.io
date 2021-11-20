@@ -190,56 +190,84 @@ Dados &lt;- read_csv(&#39;Dados_v1.csv&#39;)</code></pre>
 <pre class="r"><code>library(ggplot2)
 Dados %&gt;%
   ggplot() +
-  geom_histogram(mapping = aes(x=AtrasoOutubro)) + 
+  geom_histogram(mapping = aes(x=Variacao)) + 
   facet_wrap(~Grupos) +
-  xlab(&quot;Atrasos outubro&quot;) +
+  xlab(&quot;Variação Outubro - Dezembro&quot;) +
   ylab(&quot;Frequência&quot;)</code></pre>
+<p>Outro exemplo de histograma com uma variável com distribuição normal</p>
+<pre class="r"><code>Dados %&gt;%
+  ggplot() +
+  geom_histogram(mapping = aes(x=Deducao)) + 
+  facet_wrap(~Grupos) +
+  xlab(&quot;Valor deducido&quot;) +
+  ylab(&quot;Frequência&quot;)</code></pre>
+</div>
+<div id="teste-de-normalidade" class="section level3">
+<h3>Teste de normalidade</h3>
+<p>Teste de normalidade de uma variável COM distribuição normal</p>
+<pre class="r"><code>ggqqplot(Dados$Deducao)</code></pre>
+<p>Teste de normalidade de uma variável SEM distribuição normal</p>
+<pre class="r"><code>ggqqplot(Dados$Variacao)</code></pre>
 </div>
 <div id="diagramas-de-caixas" class="section level3">
 <h3>Diagramas de caixas</h3>
-<p>Para criar um diagrama de caixa que apresente a mediana e o intervalo interquartil usamos os seguintes comandos, onde <span style="color: red;">x</span>, define o nome da VI, <span style="color: red;">y</span> o nome da variável dependente, <span style="color: red;">add = jitter</span> coloca cada valor observado como um ponto, <span style="color: red;">add.params</span> define o tamanho e a transparência dos pontos que representam cada observação, <span style="color: red;">palette</span> define a paleta de cores.</p>
-<pre class="r"><code>library(ggpubr)
-Dados %&gt;%
-ggboxplot(x = &quot;Grupos&quot;, 
-          y = &quot;AtrasoOutubro&quot;, 
-          add = &quot;jitter&quot;,
-          add.params = list(size=2, alpha=0.5),
-          palette = &quot;jco&quot;, 
-          color=&quot;Grupos&quot;,
-          legend=&quot;none&quot;,
-          ylab=&quot;Atrasos outubro&quot;)</code></pre>
+<p>Para criar um diagrama de caixa que apresente a mediana e o intervalo interquartil usamos os seguintes comandos, onde <span style="color: red;">x</span>, define o nome da VI, <span style="color: red;">y</span> o nome da variável dependente, <span style="color: red;">geom_jitter</span> coloca cada valor observado como um ponto, e <span style="color: red;">outlier.shape</span> coloca um X para indicar a partir de qual valor os pontos observados podem ser considerados “ourliers”.</p>
+<pre class="r"><code>Dados %&gt;%
+  ggplot(aes(x=Grupos, y=Variacao)) + 
+  geom_boxplot(outlier.shape = 4) + 
+  geom_jitter(width = 0.2, alpha=0.2) +
+  ylab(&quot;Variação dezembro - outubro&quot;) +
+  xlab(&quot;Grupo&quot;)</code></pre>
 </div>
 <div id="figura-de-barras" class="section level3">
 <h3>Figura de barras</h3>
 <p>Para criar uma figura de barras usando a média e o erro padrão usamos os seguintes comandos, onde <span style="color: red;">x</span>, define o nome da VI, <span style="color: red;">y</span> o nome da variável dependente, <span style="color: red;">stat_summary(fun=mean</span> define o parâmetro que será usado para configurar a altura das barras, <span style="color: red;">stat_summary(fun.data=mean_se</span> define o parâmetro que será usado para configurar a altura das barras de erro, <span style="color: red;">width = 0.1</span> define o comprimento das linhas horizontais nos extremos das barras de erro</p>
-<pre class="r"><code>library(ggplot2)
-Dados %&gt;%
-  ggplot(aes(x=Grupos, y=MediaVariacao, color=MediaVariacao)) + 
+<pre class="r"><code>Dados %&gt;%
+  ggplot(aes(x=Grupos, y=Variacao)) + 
   stat_summary(fun = mean, geom = &quot;bar&quot;, position=&quot;dodge&quot;) + 
   stat_summary(fun.data = mean_se, geom = &quot;errorbar&quot;, width = 0.3) +   
-  xlab(&quot;Variação média&quot;) </code></pre>
+  ylab(&quot;Variação dezembro - outubro&quot;) +
+  xlab(&quot;Grupo&quot;) </code></pre>
 </div>
 </div>
 <div id="estatística-inferencial" class="section level1">
 <h1>Estatística inferencial</h1>
-<p>Para converter várias colunas em uma diade VI-VD usamos o comando gather onde <span style="color: red;">key</span> é o nome da VI, e <span style="color: red;">value</span> é o nome da VD.</p>
-<pre class="r"><code>library(tidyverse)
- df &lt;- df %&gt;% gather(key = &quot;Meses&quot;, value = &quot;Atraso&quot;, Janeiro, Fevereiro, Marco, Abril, Maio, Junho )</code></pre>
 <div id="comparação-de-dois-grupos" class="section level3">
 <h3>Comparação de dois grupos</h3>
-<p>Para compara dois grupos é preciso primeiro filtrar o data frame para ter unicamente dois grupos, para isso usaremos também o comando gather</p>
-<pre class="r"><code>Dados2 &lt;- Dados %&gt;%
-  gather(key = &quot;Grupo&quot;, value = &quot;Atrasos&quot;, AtrasoOutubro, AtrasoDezembro)</code></pre>
+<p>Para comparar dois grupos é preciso primeiro filtrar o data frame para ter unicamente dois grupos, para isso usaremos o comando filter para criar um novo dataframe com as informações dos grupos Controle e Simplificada</p>
+<pre class="r"><code>library(tidyverse)
+Dados2 &lt;- Dados %&gt;%
+  filter(Grupos == &quot;Controle&quot; | Grupos==&quot;Simplificada&quot;)</code></pre>
 <p>Com o data frame já filtrado, usaremos o comando <span style="color: red;">ggstatsplot::ggbetweenstats</span> para gerar simultaneamente uma figura com os dados descriptivos junto com os resultados inferenciais. Para isso configuramos o parâmetro <span style="color: red;">x</span> que define a VI, o parâmetro <span style="color: red;">y </span> que define a variável dependente, o parâmetro <span style="color: red;">plot.type </span> que define o tipo de figura, no caso um diagrama de caixas, e o parâmetro <span style="color: red;">type</span> que define o tipo de teste (paramétrico, não paramétrico ou robusto).</p>
 <pre class="r"><code>library(ggstatsplot)
 ggstatsplot::ggbetweenstats(
   data = Dados2,
-  x = Grupo,
-  y = Atrasos,
-  xlab = &quot;Mês&quot;,
-  ylab = &quot;Número de parcelas atrasadas&quot;,
+  x = Grupos,
+  y = Variacao,
+  xlab = &quot;Grupo&quot;,
+  ylab = &quot;Variação dezembro - outubro&quot;,
   plot.type = &quot;box&quot;,
-  type = &quot;p&quot;,
+  type = &quot;np&quot;,
+  conf.level = 0.99,
+  package = &quot;ggsci&quot;,
+  palette = &quot;nrc_npg&quot;,
+  bf.message = FALSE,
+  
+)</code></pre>
+<p>Agora filtremos os grupos Controle e Coercitiva</p>
+<pre class="r"><code>library(tidyverse)
+Dados3 &lt;- Dados %&gt;%
+  filter(Grupos == &quot;Controle&quot; | Grupos==&quot;Coercitiva&quot;)</code></pre>
+<p>E novamente, podemos usar o memso comando para comparar esses dois grupos, só é preciso alterar o nome do <span style="color: red;">data</span> que ficará como <span style="color: red;">Dados3</span></p>
+<pre class="r"><code>library(ggstatsplot)
+ggstatsplot::ggbetweenstats(
+  data = Dados3,
+  x = Grupos,
+  y = Variacao,
+  xlab = &quot;Grupo&quot;,
+  ylab = &quot;Variação dezembro - outubro&quot;,
+  plot.type = &quot;box&quot;,
+  type = &quot;np&quot;,
   conf.level = 0.99,
   package = &quot;ggsci&quot;,
   palette = &quot;nrc_npg&quot;,
@@ -250,14 +278,32 @@ ggstatsplot::ggbetweenstats(
 <div id="comparação-de-mais-de-dois-grupos" class="section level3">
 <h3>Comparação de mais de dois grupos</h3>
 <p>No caso de uma comparação de mais de dois grupos (one-way anova), o primeiro que deve ser feito é um análise da normalidade dos dados, para o qual usamos a figura QQ gerada a partir dos resíduos</p>
-<pre class="r"><code>model  &lt;- lm(MediaVariacao ~ Grupos,
+<pre class="r"><code>model  &lt;- lm(Variacao ~ Grupos,
              data = Dados)
 ggqqplot(residuals(model))</code></pre>
 <p>Se os pontos acompanham a linha diagonal podemos supor que os dados têm distribuição normal e por tanto podemos usar um modelo paramétrico, do contrário, podemos usar o teste não paramétrico ou o robusto. O comando é o mesmo usado na comparação de dois grupos, mas desta vez usando o banco Dados, e as variáveis Grupos e MediaVariacao.</p>
 <pre class="r"><code>ggstatsplot::ggbetweenstats(
   data = Dados,
   x = Grupos,
-  y = MediaVariacao,
+  y = Variacao,
+  xlab = &quot;Grupo&quot;,
+  ylab = &quot;Variação dezembro - outubros&quot;,
+  plot.type = &quot;box&quot;,
+  type = &quot;np&quot;,
+  conf.level = 0.99,
+  package = &quot;ggsci&quot;,
+  palette = &quot;nrc_npg&quot;,
+  bf.message = FALSE,
+  
+)</code></pre>
+<p>Para converter várias colunas em uma diade VI-VD usamos o comando gather onde <span style="color: red;">key</span> é o nome da VI, e <span style="color: red;">value</span> é o nome da VD.</p>
+<pre class="r"><code>Dados4 &lt;- Dados %&gt;%
+  gather(key = &quot;Grupo&quot;, value = &quot;Atrasos&quot;,  AtrasoAgosto, AtrasoOutubro, AtrasoDezembro)</code></pre>
+<p>Com o novo dataframe é possível compara o número parecelas atrasadas nos três mesês</p>
+<pre class="r"><code>ggstatsplot::ggbetweenstats(
+  data = Dados4,
+  x = Grupo,
+  y = Atrasos,
   xlab = &quot;Mês&quot;,
   ylab = &quot;Número de parcelas atrasadas&quot;,
   plot.type = &quot;box&quot;,
@@ -268,6 +314,25 @@ ggqqplot(residuals(model))</code></pre>
   bf.message = FALSE,
   
 )</code></pre>
+<p>Também é possível analisar a tendência de atrasos ao interior de cada grupo usando o seguinte comando</p>
+<pre class="r"><code>grouped_ggbetweenstats(
+  data = Dados4,
+  x = Mes,
+  y = Atrasos,
+  grouping.var = Grupos,
+  xlab = &quot;Mês&quot;,
+  ylab = &quot;Número de parcelas atrasadas&quot;,
+  plot.type = &quot;box&quot;,
+  type = &quot;np&quot;,
+  conf.level = 0.99,
+  package = &quot;ggsci&quot;,
+  palette = &quot;nrc_npg&quot;,
+  bf.message = FALSE,
+  
+)</code></pre>
+<p>Finalmente, para ajustar a ordem na qual aparece cada barra seguindo a ordem cronológica e não alfabética, iremos usar os seguintes comandos:</p>
+<pre class="r"><code>Dados4$Mes &lt;- as.factor(Dados4$Mes)
+Dados4$Mes &lt;- ordered(Dados4$Mes , levels = c(&quot;AtrasoAgosto&quot;, &quot;AtrasoOutubro&quot;, &quot;AtrasoDezembro&quot;))</code></pre>
 </div>
 </div>
 
