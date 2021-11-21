@@ -333,6 +333,14 @@ ggqqplot(residuals(model))</code></pre>
 <p>Finalmente, para ajustar a ordem na qual aparece cada barra seguindo a ordem cronológica e não alfabética, iremos usar os seguintes comandos:</p>
 <pre class="r"><code>Dados4$Mes &lt;- as.factor(Dados4$Mes)
 Dados4$Mes &lt;- ordered(Dados4$Mes , levels = c(&quot;AtrasoAgosto&quot;, &quot;AtrasoOutubro&quot;, &quot;AtrasoDezembro&quot;))</code></pre>
+<hr />
+<p>Uma outra comparação que pode ser feita é usando variáveis categórias, como a variável chamada <span style="color: red;">RedizioAtraso</span> que codifica com as palavras “sim” e “não” se esse contribuinto reduzio seu atrado. Para isso usaremos um comando muito parecido no qual iremos colocar os nomes das variáves a serem comparadas:</p>
+<pre class="r"><code>ggbarstats(
+  Dados,
+  x=ReduzioAtraso,
+  y=Grupos,
+  bf.message = FALSE,
+)  </code></pre>
 </div>
 </div>
 
